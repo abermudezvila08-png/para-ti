@@ -1,43 +1,20 @@
-LICENCIA RESTRICTIVA DE PROPIEDAD EXCLUSIVA
-"Para Ti" · VERBUM Tech Solution
+LICENCIA DE USO COMÚN Y GRATUITO
+"Para Ti" (reloj y tarjeta de regalo) · VERBUM Tech Solution
 Copyright (c) 2026 Armando Omar Bermudez Vila. Todos los derechos reservados.
 
-1. PROPIEDAD EXCLUSIVA. Todo el código fuente, diseño, textos, imágenes, iconos
-   y recursos de esta aplicación ("Para Ti", con su tarjeta de regalo y su
-   fábrica de tarjetas) son propiedad exclusiva de Armando Omar Bermudez Vila,
-   propietario de VERBUM Tech Solution.
+1. Se permite a cualquier persona usar, instalar y compartir esta aplicación
+   y su tarjeta de regalo tal como fueron publicadas, sin cobrar por ellas.
 
-2. SOLO EL PROPIETARIO PUEDE TOCAR. Únicamente el propietario puede leer,
-   copiar, modificar, actualizar, desplegar, distribuir o retirar esta
-   aplicación y su código, en GitHub, Render, GitHub Pages o cualquier otro
-   lugar.
+2. Se prohíbe vender este código, cobrar por su distribución o presentar la
+   obra como propia.
 
-3. PROHIBICIONES. Queda prohibido a cualquier otra persona, sin permiso previo
-   por escrito del propietario: copiar, reproducir, modificar, crear obras
-   derivadas, adaptar, distribuir, publicar, reutilizar, sublicenciar, vender
-   o explotar el código, el diseño o cualquier parte del proyecto, en forma
-   total o parcial, incluido usar el repositorio como base de otra obra.
+3. Los derechos de autor y la marca VERBUM Tech Solution pertenecen a
+   Armando Omar Bermudez Vila.
 
-4. USO PERMITIDO DE LOS RECEPTORES. Quien reciba la aplicación como regalo solo
-   puede usarla tal como fue publicada, a través de sus enlaces oficiales,
-   sin intervenir, copiar ni redistribuir el código.
+4. La Fábrica de tarjetas y las demás herramientas privadas de VERBUM Tech
+   Solution NO están incluidas en este repositorio ni autorizadas por esta
+   licencia: son de uso exclusivo de su propietario (ver fabrica-vts,
+   repositorio privado).
 
-5. SIN LICENCIA IMPLÍCITA. Este documento no otorga licencia alguna. Que el
-   código esté en un repositorio público no implica permiso de uso: el
-   repositorio público sirve únicamente para el despliegue técnico de la
-   aplicación.
-
-6. NULIDAD. Todo uso no autorizado queda prohibido desde ya y el propietario
-   puede exigir su cese inmediato y las compensaciones que permita la ley.
-
-7. VIGENCIA. Esta licencia sustituye y anula cualquier licencia anterior de
-   este proyecto (incluida Apache 2.0), que queda sin efecto.
-
---------------
-ENGLISH (summary): ALL RIGHTS RESERVED. This project is the exclusive property
-of Armando Omar Bermudez Vila (VERBUM Tech Solution). No one but the owner may
-read, copy, modify, update, deploy, distribute, publish or reuse this code or
-design, in whole or in part. Gift recipients may only use the published app
-through its official links, as is. No license is granted; the public repository
-exists solely for the technical deployment of the app. This license supersedes
-any prior license for this project (Apache 2.0 included).
+5. Esta licencia sustituye y anula la licencia restrictiva aplicada antes a
+   este repositorio y cualquier licencia anterior (Apache 2.0 incluida).
