@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="manifest" href="manifest.json">
+<title>Reloj Anillos 24h</title>
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --text: #ffffff;
+    --accent: #00ffcc;
+    --card: #15151f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    position: relative;
+    background: var(--bg) center/cover no-repeat;
+    transition: background-image 0.6s ease;
+  }
+  #app.has-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,12,0.72);
+    z-index: 0;
+    pointer-events: none;
+  }
+  #app > * { position: relative; z-index: 1; }
+
+  /* === ZONA SUPERIOR === */
+  #top-zone {
+    flex: 0 0 auto;
+    padding: 10px 14px 6px;
+    padding-top: max(10px, env(safe-area-inset-top));
+  }
+  #local-time {
+    font-size: 12px;
+    opacity: 0.65;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  #tasks-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #777;
+    margin-bottom: 5px;
+  }
+  #tasks-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 24px;
+  }
+  .task-chip {
+    background: rgba(30,30,46,0.85);
+    border: 1px solid #2a2a3a;
+    border-radius: 16px;
+    padding: 3px 10px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .task-chip .time { color: var(--accent); font-weight: 600; }
+  .task-chip.done { opacity: 0.4; text-decoration: line-through; }
+  #btn-settings {
+    position: absolute;
+    top: max(8px, env(safe-area-inset-top));
+    right: 10px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid #333;
+    color: #bbb;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 5;
+  }
+
+  /* === ZONA CENTRAL: Reloj (más espacio) === */
+  #clock-zone {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 0;
+    padding: 4px 0;
+  }
+  #canvas-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
+    max-height: 280px;
+  }
+  #clockCanvas, #explosionCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* === ZONA INFERIOR: Notificaciones (más compacta, más arriba) === */
+  #bottom-zone {
+    flex: 0 0 auto;
+    padding: 6px 14px 14px;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    min-height: 70px;
+    max-height: 28vh;
+    overflow-y: auto;
+  }
+  #notif-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  #notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .notif-item {
+    background: rgba(21,21,31,0.9);
+    border-left: 3px solid #333;
+    padding: 7px 11px;
+    font-size: 12px;
+    border-radius: 0 6px 6px 0;
+  }
+  .notif-item .app { font-size: 10px; color: #777; }
+
+  /* === PANEL AJUSTES === */
+  #settings-panel {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,12,0.97);
+    z-index: 100;
+    padding: 16px 14px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #settings-panel.open { display: block; }
+  #settings-panel h2 {
+    font-size: 17px;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
+  #settings-panel .sub {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 14px;
+  }
+  .section {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #1a1a28;
+  }
+  .section h3 {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .form-group {
+    margin-bottom: 10px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 3px;
+  }
+  .form-group input[type="text"],
+  .form-group input[type="time"],
+  .form-group input[type="file"],
+  .form-group select {
+    width: 100%;
+    padding: 9px 11px;
+    background: #1a1a28;
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+  }
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent);
+  }
+  .task-edit-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 7px;
+    background: #15151f;
+    padding: 7px;
+    border-radius: 8px;
+  }
+  .task-edit-row input {
+    flex: 1;
+    padding: 7px;
+    background: #1a1a28;
+    border: 1px solid #2a2a3a;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+  }
+  .task-edit-row button {
+    background: #332222;
+    border: none;
+    color: #ff6666;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn {
+    width: 100%;
+    padding: 11px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary { background: #003322; color: var(--accent); }
+  .btn-secondary { background: #1a3a2a; color: #4dffb0; }
+  .btn-ghost { background: #222; color: #ccc; }
+  .btn-danger { background: #331111; color: #ff8888; }
+
+  #status {
+    position: absolute;
+    bottom: 2px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 9px;
+    color: #333;
+    pointer-events: none;
+  }
+
+  /* Fondos predefinidos */
+  .bg-preview {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .bg-swatch {
+    width: 48px;
+    height: 36px;
+    border-radius: 6px;
+    border: 2px solid #333;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-swatch.active { border-color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top-zone">
+    <div id="local-time">--:--:--</div>
+    <div id="tasks-title">Tareas del día</div>
+    <div id="tasks-list"></div>
+    <button id="btn-settings" title="Ajustes">⚙</button>
+  </div>
+
+  <div id="clock-zone">
+    <div id="canvas-wrap">
+      <canvas id="clockCanvas"></canvas>
+      <canvas id="explosionCanvas"></canvas>
+    </div>
+  </div>
+
+  <div id="bottom-zone">
+    <div id="notif-title">Notificaciones</div>
+    <div id="notif-list">
+      <div class="notif-item">
+        <div class="app">Sistema</div>
+        Espacio para notificaciones del teléfono / calendario
+      </div>
+    </div>
+  </div>
+
+  <div id="status">Reloj Anillos • PWA</div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings-panel">
+  <h2>Ajustes del Reloj</h2>
+  <p class="sub">Todo se guarda localmente en el dispositivo.</p>
+
+  <!-- TAREAS -->
+  <div class="section">
+    <h3>Tareas fijas</h3>
+    <div id="tasks-edit-list"></div>
+    <button class="btn btn-secondary" id="btn-add-task">+ Añadir tarea</button>
+  </div>
+
+  <!-- SONIDOS -->
+  <div class="section">
+    <h3>Sonidos</h3>
+    <div class="toggle-row">
+      <span>Sonido de explosión (00:00)</span>
+      <input type="checkbox" id="snd-explosion" checked>
+    </div>
+    <div class="toggle-row">
+      <span>Sonido cada hora</span>
+      <input type="checkbox" id="snd-hour" checked>
+    </div>
+    <div class="toggle-row">
+      <span>Aviso de tareas</span>
+      <input type="checkbox" id="snd-task" checked>
+    </div>
+    <div class="toggle-row">
+      <span>Aviso de notificaciones</span>
+      <input type="checkbox" id="snd-notif" checked>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>Sonido personalizado (explosión)</label>
+      <input type="file" id="custom-explosion" accept="audio/*">
+    </div>
+    <div class="form-group">
+      <label>Sonido personalizado (hora / tarea)</label>
+      <input type="file" id="custom-hour" accept="audio/*">
+    </div>
+    <button class="btn btn-ghost" id="btn-test-sound" style="margin-top:6px">Probar sonidos</button>
+  </div>
+
+  <!-- FONDO -->
+  <div class="section">
+    <h3>Fondo de pantalla</h3>
+    <div class="bg-preview" id="bg-previews">
+      <div class="bg-swatch active" data-bg="none" style="background:#0a0a0f" title="Ninguno"></div>
+      <div class="bg-swatch" data-bg="dark1" style="background:linear-gradient(160deg,#0d1117,#161b22)" title="Oscuro 1"></div>
+      <div class="bg-swatch" data-bg="dark2" style="background:linear-gradient(160deg,#0a0a12,#1a1025)" title="Púrpura"></div>
+      <div class="bg-swatch" data-bg="dark3" style="background:linear-gradient(160deg,#0a1210,#0f1f1a)" title="Verde"></div>
+      <div class="bg-swatch" data-bg="dark4" style="background:linear-gradient(160deg,#120a0a,#1f1010)" title="Rojo"></div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>Imagen propia (oscura recomendada)</label>
+      <input type="file" id="custom-bg" accept="image/*">
+    </div>
+    <button class="btn btn-ghost" id="btn-clear-bg">Quitar fondo personalizado</button>
+  </div>
+
+  <!-- NOTIFICACIONES & CALENDARIO -->
+  <div class="section">
+    <h3>Notificaciones y calendario</h3>
+    <button class="btn btn-secondary" id="btn-request-notif">Pedir permiso de notificaciones</button>
+    <p style="font-size:11px;color:#666;margin-top:8px">
+      Las notificaciones del sistema y del calendario requieren permiso del navegador.
+      Google Calendar necesita autenticación OAuth (se puede añadir más adelante con backend o cuenta de servicio).
+    </p>
+    <div class="form-group" style="margin-top:10px">
+      <label>Sincronizar hora (API gratuita, opcional)</label>
+      <select id="time-sync">
+        <option value="local">Solo hora local del dispositivo (recomendado)</option>
+        <option value="worldtime">WorldTimeAPI (requiere internet)</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btn-save">Guardar y cerrar</button>
+  <button class="btn btn-ghost" id="btn-close-settings">Cerrar sin guardar</button>
+</div>
+
+<script>
+// ============================================================
+// RELOJ ANILLOS 24h - Prototipo PWA
+// ============================================================
+
+const COLOR_CYCLE = [
+  '#ffffff', '#ffee00', '#00ff66', '#00aaff',
+  '#aa44ff', '#ff2244', '#ff8800', '#ffee00', '#ffffff'
+];
+
+// --- Persistencia ---
+const store = {
+  get(k, def) {
+    try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; }
+  },
+  set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+};
+
+let fixedTasks = store.get('reloj_tasks', [
+  { time: '08:00', text: 'Pastillas', done: false },
+  { time: '12:30', text: 'Almuerzo', done: false },
+  { time: '18:00', text: 'Ejercicio', done: false }
+]);
+
+let soundSettings = store.get('reloj_sounds', {
+  explosion: true, hour: true, task: true, notif: true
+});
+
+let bgSetting = store.get('reloj_bg', { type: 'none', data: null });
+
+// --- Audio ---
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let customBuffers = { explosion: null, hour: null };
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playTone(freq, duration, type = 'sine', gain = 0.15) {
+  ensureAudio();
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(gain, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function playExplosionSound() {
+  if (!soundSettings.explosion) return;
+  ensureAudio();
+  if (customBuffers.explosion) {
+    const src = audioCtx.createBufferSource();
+    src.buffer = customBuffers.explosion;
+    src.connect(audioCtx.destination);
+    src.start();
+    return;
+  }
+  // Explosión sintética
+  playTone(120, 0.4, 'sawtooth', 0.2);
+  setTimeout(() => playTone(80, 0.6, 'square', 0.12), 80);
+  setTimeout(() => playTone(200, 0.3, 'sine', 0.1), 200);
+  // Ruido corto
+  const bufferSize = audioCtx.sampleRate * 0.5;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+  const noise = audioCtx.createBufferSource();
+  const ng = audioCtx.createGain();
+  noise.buffer = buffer;
+  ng.gain.setValueAtTime(0.25, audioCtx.currentTime);
+  ng.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+  noise.connect(ng);
+  ng.connect(audioCtx.destination);
+  noise.start();
+}
+
+function playHourSound() {
+  if (!soundSettings.hour) return;
+  ensureAudio();
+  if (customBuffers.hour) {
+    const src = audioCtx.createBufferSource();
+    src.buffer = customBuffers.hour;
+    src.connect(audioCtx.destination);
+    src.start();
+    return;
+  }
+  playTone(880, 0.15, 'sine', 0.18);
+  setTimeout(() => playTone(1174, 0.25, 'sine', 0.14), 160);
+}
+
+function playTaskSound() {
+  if (!soundSettings.task) return;
+  ensureAudio();
+  playTone(660, 0.12, 'triangle', 0.16);
+  setTimeout(() => playTone(880, 0.18, 'triangle', 0.12), 130);
+}
+
+function playNotifSound() {
+  if (!soundSettings.notif) return;
+  ensureAudio();
+  playTone(523, 0.1, 'sine', 0.12);
+  setTimeout(() => playTone(659, 0.15, 'sine', 0.1), 100);
+}
+
+async function loadCustomSound(file, key) {
+  if (!file) return;
+  ensureAudio();
+  const arr = await file.arrayBuffer();
+  customBuffers[key] = await audioCtx.decodeAudioData(arr);
+}
+
+// --- Canvas ---
+const canvas = document.getElementById('clockCanvas');
+const ctx = canvas.getContext('2d');
+const expCanvas = document.getElementById('explosionCanvas');
+const expCtx = expCanvas.getContext('2d');
+
+function resize() {
+  const wrap = document.getElementById('canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  expCanvas.width = canvas.width;
+  expCanvas.height = canvas.height;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  expCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+
+// --- Lógica de anillos ---
+function computeRings(now) {
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  const ms = now.getMilliseconds();
+
+  const H1 = Math.floor(h / 10);
+  const H2 = h % 10;
+  const M1 = Math.floor(m / 10);
+  const M2 = m % 10;
+  const S1 = Math.floor(s / 10);
+  const S2 = s % 10;
+
+  const secProgress = s + ms / 1000;
+  const minProgress = m + secProgress / 60;
+  const hourProgress = h + minProgress / 60;
+
+  function ringsFor(decena, unidad, progress, maxRings, isHour) {
+    const scale = isHour ? 1.4 : 1.0;
+    if (decena === 0) {
+      const p = unidad + (progress % 1);
+      return { count: (p / 10) * maxRings, max: maxRings, scale, leading: true };
+    }
+    return { count: progress % maxRings, max: maxRings, scale, leading: false };
+  }
+
+  return {
+    digits: [H1, H2, M1, M2, S1, S2],
+    ringInfo: [
+      ringsFor(H1, H2, hourProgress, 24, true),
+      { count: hourProgress % 24, max: 24, scale: 1.4, leading: false },
+      ringsFor(M1, M2, minProgress, 60, false),
+      { count: minProgress % 60, max: 60, scale: 1.0, leading: false },
+      ringsFor(S1, S2, secProgress, 60, false),
+      { count: secProgress % 60, max: 60, scale: 1.0, leading: false }
+    ]
+  };
+}
+
+function drawDigit(ctx, x, y, digit, ringInfo, size) {
+  const { count, max, scale } = ringInfo;
+  const maxVisibleRings = 9;
+  const ringCount = Math.min(count, max);
+  const visibleRings = Math.min(Math.floor(ringCount), maxVisibleRings);
+  const frac = ringCount - Math.floor(ringCount);
+
+  const colorIdx = Math.floor(ringCount) % COLOR_CYCLE.length;
+  const baseColor = COLOR_CYCLE[colorIdx];
+  const nextColor = COLOR_CYCLE[(colorIdx + 1) % COLOR_CYCLE.length];
+
+  const baseRadius = size * 0.40;
+  const ringThickness = (size * 0.017) * scale;
+
+  for (let i = 0; i < visibleRings; i++) {
+    const t = i / maxVisibleRings;
+    const r = baseRadius + (i + 1) * ringThickness * 1.85;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = baseColor;
+    ctx.globalAlpha = 0.30 + 0.70 * (1 - t);
+    ctx.lineWidth = ringThickness * (0.65 + 0.35 * (i / maxVisibleRings));
+    ctx.stroke();
+  }
+
+  if (visibleRings < maxVisibleRings && frac > 0.015) {
+    const r = baseRadius + (visibleRings + 1) * ringThickness * 1.85;
+    ctx.beginPath();
+    ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2);
+    ctx.strokeStyle = nextColor;
+    ctx.globalAlpha = 0.95;
+    ctx.lineWidth = ringThickness;
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.font = `700 ${size * 0.58}px "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = baseColor;
+  ctx.shadowBlur = 10 + visibleRings * 1.8;
+  ctx.fillText(String(digit), x, y + 1);
+  ctx.shadowBlur = 0;
+}
+
+// --- Explosión ---
+let particles = [];
+let exploding = false;
+let explodeStart = 0;
+
+function triggerExplosion() {
+  exploding = true;
+  explodeStart = performance.now();
+  particles = [];
+  const wrap = document.getElementById('canvas-wrap');
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  const cx = w / 2;
+  const cy = h / 2;
+
+  for (let i = 0; i < 160; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 2 + Math.random() * 7;
+    particles.push({
+      x: cx + (Math.random() - 0.5) * 100,
+      y: cy + (Math.random() - 0.5) * 50,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - Math.random() * 3,
+      life: 1,
+      decay: 0.010 + Math.random() * 0.018,
+      size: 2.5 + Math.random() * 6,
+      color: COLOR_CYCLE[Math.floor(Math.random() * COLOR_CYCLE.length)]
+    });
+  }
+  playExplosionSound();
+}
+
+function updateExplosion(dt) {
+  if (!exploding) return;
+  if (performance.now() - explodeStart > 3000) {
+    exploding = false;
+    particles = [];
+    return;
+  }
+  for (const p of particles) {
+    p.x += p.vx * dt * 60;
+    p.y += p.vy * dt * 60;
+    p.vy += 0.09 * dt * 60;
+    p.life -= p.decay * dt * 60;
+  }
+  particles = particles.filter(p => p.life > 0);
+}
+
+function drawExplosion() {
+  const wrap = document.getElementById('canvas-wrap');
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  expCtx.clearRect(0, 0, w, h);
+  if (!exploding) return;
+
+  for (const p of particles) {
+    expCtx.beginPath();
+    expCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    expCtx.fillStyle = p.color;
+    expCtx.globalAlpha = Math.max(0, p.life);
+    expCtx.fill();
+  }
+  expCtx.globalAlpha = 1;
+}
+
+// --- Dibujo principal ---
+let lastHour = -1;
+let lastMidnightDate = -1;
+let lastTaskCheck = '';
+
+function draw() {
+  const wrap = document.getElementById('canvas-wrap');
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  ctx.clearRect(0, 0, w, h);
+
+  const now = new Date();
+  const data = computeRings(now);
+
+  // Medianoche
+  if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() === 0) {
+    if (lastMidnightDate !== now.getDate()) {
+      triggerExplosion();
+      lastMidnightDate = now.getDate();
+    }
+  }
+
+  // Cambio de hora
+  if (now.getHours() !== lastHour) {
+    if (lastHour !== -1 && now.getMinutes() === 0 && now.getSeconds() < 2) {
+      playHourSound();
+    }
+    lastHour = now.getHours();
+  }
+
+  // Tareas que llegan
+  const pad = n => String(n).padStart(2, '0');
+  const nowStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  if (nowStr !== lastTaskCheck && now.getSeconds() < 2) {
+    fixedTasks.forEach(t => {
+      if (t.time === nowStr && !t.done) {
+        playTaskSound();
+        // Notificación del sistema si hay permiso
+        if (Notification.permission === 'granted') {
+          new Notification('Tarea', { body: t.text, silent: true });
+        }
+      }
+    });
+    lastTaskCheck = nowStr;
+  }
+
+  // Tamaño de dígitos más grande
+  const digitSize = Math.min(w * 0.155, h * 0.58);
+  const totalWidth = digitSize * 6.6;
+  const startX = (w - totalWidth) / 2 + digitSize * 0.48;
+  const cy = h * 0.50;
+
+  const positions = [];
+  for (let i = 0; i < 6; i++) {
+    let x = startX + i * digitSize * 1.02;
+    if (i >= 2) x += digitSize * 0.22;
+    if (i >= 4) x += digitSize * 0.22;
+    positions.push(x);
+  }
+
+  // Separadores
+  ctx.fillStyle = '#556';
+  ctx.font = `600 ${digitSize * 0.42}px system-ui`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(':', (positions[1] + positions[2]) / 2, cy);
+  ctx.fillText(':', (positions[3] + positions[4]) / 2, cy);
+
+  for (let i = 0; i < 6; i++) {
+    drawDigit(ctx, positions[i], cy, data.digits[i], data.ringInfo[i], digitSize);
+  }
+
+  updateExplosion(1/60);
+  drawExplosion();
+}
+
+// --- UI ---
+function updateUI() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('local-time').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}  •  ${now.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' })}`;
+
+  const list = document.getElementById('tasks-list');
+  list.innerHTML = '';
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  fixedTasks.forEach((t, idx) => {
+    const [th, tm] = t.time.split(':').map(Number);
+    const isPast = currentMinutes >= (th * 60 + tm);
+    const chip = document.createElement('div');
+    chip.className = 'task-chip' + (isPast || t.done ? ' done' : '');
+    chip.innerHTML = `<span class="time">${t.time}</span> ${t.text}`;
+    chip.onclick = () => {
+      fixedTasks[idx].done = !fixedTasks[idx].done;
+      store.set('reloj_tasks', fixedTasks);
+      updateUI();
+    };
+    list.appendChild(chip);
+  });
+}
+
+// --- Fondo ---
+function applyBackground() {
+  const app = document.getElementById('app');
+  if (bgSetting.type === 'custom' && bgSetting.data) {
+    app.style.backgroundImage = `url(${bgSetting.data})`;
+    app.classList.add('has-bg');
+  } else if (bgSetting.type && bgSetting.type !== 'none') {
+    const gradients = {
+      dark1: 'linear-gradient(160deg,#0d1117,#161b22)',
+      dark2: 'linear-gradient(160deg,#0a0a12,#1a1025)',
+      dark3: 'linear-gradient(160deg,#0a1210,#0f1f1a)',
+      dark4: 'linear-gradient(160deg,#120a0a,#1f1010)'
+    };
+    app.style.backgroundImage = gradients[bgSetting.type] || 'none';
+    app.classList.toggle('has-bg', !!gradients[bgSetting.type]);
+  } else {
+    app.style.backgroundImage = 'none';
+    app.classList.remove('has-bg');
+  }
+}
+
+// --- Settings ---
+const settingsPanel = document.getElementById('settings-panel');
+
+document.getElementById('btn-settings').onclick = () => {
+  // Cargar toggles
+  document.getElementById('snd-explosion').checked = soundSettings.explosion;
+  document.getElementById('snd-hour').checked = soundSettings.hour;
+  document.getElementById('snd-task').checked = soundSettings.task;
+  document.getElementById('snd-notif').checked = soundSettings.notif;
+  renderTasksEdit();
+  // Marcar fondo activo
+  document.querySelectorAll('.bg-swatch').forEach(s => {
+    s.classList.toggle('active', s.dataset.bg === (bgSetting.type || 'none'));
+  });
+  settingsPanel.classList.add('open');
+};
+
+document.getElementById('btn-close-settings').onclick = () => {
+  settingsPanel.classList.remove('open');
+};
+
+document.getElementById('btn-save').onclick = () => {
+  // Tareas
+  const rows = document.querySelectorAll('.task-edit-row');
+  fixedTasks = [];
+  rows.forEach(row => {
+    const time = row.querySelector('.t-time').value;
+    const text = row.querySelector('.t-text').value.trim();
+    if (time && text) fixedTasks.push({ time, text, done: false });
+  });
+  store.set('reloj_tasks', fixedTasks);
+
+  // Sonidos
+  soundSettings = {
+    explosion: document.getElementById('snd-explosion').checked,
+    hour: document.getElementById('snd-hour').checked,
+    task: document.getElementById('snd-task').checked,
+    notif: document.getElementById('snd-notif').checked
+  };
+  store.set('reloj_sounds', soundSettings);
+
+  updateUI();
+  settingsPanel.classList.remove('open');
+};
+
+document.getElementById('btn-add-task').onclick = () => {
+  fixedTasks.push({ time: '12:00', text: 'Nueva tarea', done: false });
+  renderTasksEdit();
+};
+
+function renderTasksEdit() {
+  const container = document.getElementById('tasks-edit-list');
+  container.innerHTML = '';
+  fixedTasks.forEach((t, idx) => {
+    const row = document.createElement('div');
+    row.className = 'task-edit-row';
+    row.innerHTML = `
+      <input class="t-time" type="time" value="${t.time}">
+      <input class="t-text" type="text" value="${t.text}" placeholder="Descripción">
+      <button type="button" data-idx="${idx}">✕</button>
+    `;
+    row.querySelector('button').onclick = () => {
+      fixedTasks.splice(idx, 1);
+      renderTasksEdit();
+    };
+    container.appendChild(row);
+  });
+}
+
+// Sonidos personalizados
+document.getElementById('custom-explosion').onchange = e => {
+  if (e.target.files[0]) loadCustomSound(e.target.files[0], 'explosion');
+};
+document.getElementById('custom-hour').onchange = e => {
+  if (e.target.files[0]) loadCustomSound(e.target.files[0], 'hour');
+};
+document.getElementById('btn-test-sound').onclick = () => {
+  ensureAudio();
+  playExplosionSound();
+  setTimeout(playHourSound, 700);
+  setTimeout(playTaskSound, 1400);
+};
+
+// Fondos
+document.querySelectorAll('.bg-swatch').forEach(sw => {
+  sw.onclick = () => {
+    document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    bgSetting = { type: sw.dataset.bg, data: null };
+    store.set('reloj_bg', bgSetting);
+    applyBackground();
+  };
+});
+document.getElementById('custom-bg').onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    bgSetting = { type: 'custom', data: ev.target.result };
+    store.set('reloj_bg', bgSetting);
+    applyBackground();
+  };
+  reader.readAsDataURL(file);
+};
+document.getElementById('btn-clear-bg').onclick = () => {
+  bgSetting = { type: 'none', data: null };
+  store.set('reloj_bg', bgSetting);
+  applyBackground();
+  document.querySelectorAll('.bg-swatch').forEach(s => {
+    s.classList.toggle('active', s.dataset.bg === 'none');
+  });
+};
+
+// Notificaciones
+document.getElementById('btn-request-notif').onclick = async () => {
+  if (!('Notification' in window)) {
+    alert('Este navegador no soporta notificaciones.');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    new Notification('Reloj Anillos', { body: 'Notificaciones activadas.' });
+    playNotifSound();
+  } else {
+    alert('Permiso denegado. Puedes activarlo en los ajustes del navegador.');
+  }
+};
+
+// --- Arranque ---
+function loop() {
+  draw();
+  updateUI();
+  requestAnimationFrame(loop);
+}
+
+applyBackground();
+resize();
+loop();
+
+// Service Worker para PWA (si existe)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
