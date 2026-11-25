@@ -1,4 +1,4 @@
-const CACHE = 'para-ti-v3';
+const CACHE = 'para-ti-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -23,8 +23,16 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Las páginas siempre frescas en línea; sin red, respaldo desde la caché.
+// Los demás recursos (iconos, manifest) siguen primero en caché.
 self.addEventListener('fetch', e => {
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(r => r || fetch(e.request).catch(() => caches.match('./index.html')))
+    caches.match(e.request, { ignoreSearch: true }).then(r => r || fetch(e.request))
   );
 });
