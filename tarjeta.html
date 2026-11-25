@@ -112,6 +112,7 @@ function draw(){
  // ancla de texto segun direccion
  var ax=rtl?950:130,maxW=820;
  ctx.textAlign=rtl?"right":"left";
+ try{ctx.direction=rtl?"rtl":"ltr";}catch(e){}
  // linea del regalo
  ctx.fillStyle="#c9b988";ctx.font="500 28px "+F;
  ctx.fillText(T[lang].gift,ax,200);
