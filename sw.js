@@ -1,4 +1,4 @@
-const CACHE = 'para-ti-v1';
+const CACHE = 'para-ti-v2';
 const ASSETS = [
   './',
   './index.html',

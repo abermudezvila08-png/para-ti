@@ -295,12 +295,37 @@
     background-position: center;
   }
   .bg-swatch.active { border-color: var(--accent); }
+
+  #local-date {
+    font-size: 12px;
+    color: #9aa0a6;
+    text-align: center;
+  }
+  #greeting {
+    font-size: clamp(18px, 5vw, 28px);
+    font-weight: 700;
+    background: linear-gradient(90deg, #f0b429, #ff7a1a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-align: center;
+    letter-spacing: .5px;
+  }
+  #cal-next {
+    font-size: 12px;
+    color: #f0b429;
+    text-align: center;
+    padding: 2px 10px 0;
+  }
+  body[dir="rtl"] #settings-panel, body[dir="rtl"] .toggle-row { text-align: right; }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="top-zone">
     <div id="local-time">--:--:--</div>
+    <div id="local-date"></div>
+    <div id="greeting">Para Ti</div>
     <div id="tasks-title">Tareas del día</div>
     <div id="tasks-list"></div>
     <button id="btn-settings" title="Ajustes">⚙</button>
@@ -314,11 +339,12 @@
   </div>
 
   <div id="bottom-zone">
+    <div id="cal-next"></div>
     <div id="notif-title">Notificaciones</div>
     <div id="notif-list">
       <div class="notif-item">
-        <div class="app">Sistema</div>
-        Espacio para notificaciones del teléfono / calendario
+        <div class="app" id="lbl-sys">Sistema</div>
+        <span id="lbl-ph">Espacio para notificaciones del teléfono / calendario</span>
       </div>
     </div>
   </div>
@@ -328,41 +354,63 @@
 
 <!-- SETTINGS -->
 <div id="settings-panel">
-  <h2>Ajustes</h2>
-  <p class="sub">Todo se guarda localmente en el dispositivo.</p>
+  <h2 id="lbl-settings">Ajustes</h2>
+  <p class="sub" id="lbl-sub">Todo se guarda localmente en el dispositivo.</p>
+
+  <!-- PERSONALIZACIÓN -->
+  <div class="section">
+    <h3 id="lbl-personal">Personalización</h3>
+    <div class="form-group">
+      <label id="lbl-name">Tu nombre (aparece en pantalla)</label>
+      <input type="text" id="gift-name" maxlength="30" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label id="lbl-lang">Idioma</label>
+      <select id="gift-lang">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="pt">Português</option>
+        <option value="de">Deutsch</option>
+        <option value="zh">中文</option>
+        <option value="ar">العربية</option>
+        <option value="nl">Nederlands</option>
+      </select>
+    </div>
+  </div>
 
   <!-- TAREAS -->
   <div class="section">
-    <h3>Tareas fijas</h3>
+    <h3 id="lbl-tasks">Tareas fijas</h3>
     <div id="tasks-edit-list"></div>
     <button class="btn btn-secondary" id="btn-add-task">+ Añadir tarea</button>
   </div>
 
   <!-- SONIDOS -->
   <div class="section">
-    <h3>Sonidos</h3>
+    <h3 id="lbl-sounds">Sonidos</h3>
     <div class="toggle-row">
-      <span>Sonido de explosión (00:00)</span>
+      <span id="lbl-snd-exp">Sonido de explosión (00:00)</span>
       <input type="checkbox" id="snd-explosion" checked>
     </div>
     <div class="toggle-row">
-      <span>Sonido cada hora</span>
+      <span id="lbl-snd-hour">Sonido cada hora</span>
       <input type="checkbox" id="snd-hour" checked>
     </div>
     <div class="toggle-row">
-      <span>Aviso de tareas</span>
+      <span id="lbl-snd-task">Aviso de tareas</span>
       <input type="checkbox" id="snd-task" checked>
     </div>
     <div class="toggle-row">
-      <span>Aviso de notificaciones</span>
+      <span id="lbl-snd-notif">Aviso de notificaciones</span>
       <input type="checkbox" id="snd-notif" checked>
     </div>
     <div class="form-group" style="margin-top:10px">
-      <label>Sonido personalizado (explosión)</label>
+      <label id="lbl-custom-exp">Sonido personalizado (explosión)</label>
       <input type="file" id="custom-explosion" accept="audio/*">
     </div>
     <div class="form-group">
-      <label>Sonido personalizado (hora / tarea)</label>
+      <label id="lbl-custom-hour">Sonido personalizado (hora / tarea)</label>
       <input type="file" id="custom-hour" accept="audio/*">
     </div>
     <button class="btn btn-ghost" id="btn-test-sound" style="margin-top:6px">Probar sonidos</button>
@@ -370,7 +418,7 @@
 
   <!-- FONDO -->
   <div class="section">
-    <h3>Fondo de pantalla</h3>
+    <h3 id="lbl-bg">Fondo de pantalla</h3>
     <div class="bg-preview" id="bg-previews">
       <div class="bg-swatch active" data-bg="none" style="background:#0a0a0f" title="Ninguno"></div>
       <div class="bg-swatch" data-bg="dark1" style="background:linear-gradient(160deg,#0d1117,#161b22)" title="Oscuro 1"></div>
@@ -379,7 +427,7 @@
       <div class="bg-swatch" data-bg="dark4" style="background:linear-gradient(160deg,#120a0a,#1f1010)" title="Rojo"></div>
     </div>
     <div class="form-group" style="margin-top:10px">
-      <label>Imagen propia (oscura recomendada)</label>
+      <label id="lbl-custom-bg">Imagen propia (oscura recomendada)</label>
       <input type="file" id="custom-bg" accept="image/*">
     </div>
     <button class="btn btn-ghost" id="btn-clear-bg">Quitar fondo personalizado</button>
@@ -387,17 +435,23 @@
 
   <!-- NOTIFICACIONES & CALENDARIO -->
   <div class="section">
-    <h3>Notificaciones y calendario</h3>
+    <h3 id="lbl-notifcal">Notificaciones y calendario</h3>
     <button class="btn btn-secondary" id="btn-request-notif">Pedir permiso de notificaciones</button>
-    <p style="font-size:11px;color:#666;margin-top:8px">
-      Las notificaciones del sistema y del calendario requieren permiso del navegador.
-      Google Calendar necesita autenticación OAuth (se puede añadir más adelante con backend o cuenta de servicio).
+    <p id="lbl-notifnote" style="font-size:11px;color:#666;margin-top:8px">
+      Las notificaciones del sistema requieren permiso del navegador.
     </p>
     <div class="form-group" style="margin-top:10px">
-      <label>Sincronizar hora (API gratuita, opcional)</label>
+      <label id="lbl-gcal">Calendario de Google</label>
+      <input type="text" id="gcal-client-id" autocomplete="off" placeholder="xxxx.apps.googleusercontent.com">
+      <button class="btn btn-secondary" id="btn-gcal" style="margin-top:6px">Conectar mi Google Calendar</button>
+      <div id="gcal-status" style="font-size:11px;color:#666;margin-top:6px"></div>
+    </div>
+    <div id="gcal-events" style="font-size:12px;color:#ccc;margin-top:6px"></div>
+    <div class="form-group" style="margin-top:10px">
+      <label id="lbl-sync">Sincronizar hora (API gratuita, opcional)</label>
       <select id="time-sync">
-        <option value="local">Solo hora local del dispositivo (recomendado)</option>
-        <option value="worldtime">WorldTimeAPI (requiere internet)</option>
+        <option id="opt-sync-local" value="local">Solo hora local del dispositivo (recomendado)</option>
+        <option id="opt-sync-world" value="worldtime">WorldTimeAPI (requiere internet)</option>
       </select>
     </div>
   </div>
@@ -435,6 +489,264 @@ let soundSettings = store.get('reloj_sounds', {
 });
 
 let bgSetting = store.get('reloj_bg', { type: 'none', data: null });
+
+// --- Idiomas del regalo (8) ---
+const LANGS = {
+  es: {
+    personal:'Personalización', name:'Tu nombre (aparece en pantalla)', lang:'Idioma',
+    greet:'Para Ti', greetName:'Para Ti, {n}', gift:'Un regalo de VERBUM Tech Solution',
+    tasks:'Tareas del día', notifs:'Notificaciones', sys:'Sistema',
+    ph:'Espacio para notificaciones del teléfono / calendario',
+    settings:'Ajustes', sub:'Todo se guarda localmente en el dispositivo.',
+    fixed:'Tareas fijas', addTask:'+ Añadir tarea', newTask:'Nueva tarea', descr:'Descripción',
+    sounds:'Sonidos', sndExp:'Sonido de explosión (00:00)', sndHour:'Sonido cada hora',
+    sndTask:'Aviso de tareas', sndNotif:'Aviso de notificaciones',
+    customExp:'Sonido personalizado (explosión)', customHour:'Sonido personalizado (hora / tarea)',
+    test:'Probar sonidos', bg:'Fondo de pantalla', customBg:'Imagen propia (oscura recomendada)',
+    clearBg:'Quitar fondo personalizado',
+    notifCal:'Notificaciones y calendario', reqNotif:'Pedir permiso de notificaciones',
+    notifNote:'Las notificaciones del sistema requieren permiso del navegador.',
+    notifOn:'Notificaciones activadas.', noNotif:'Este navegador no soporta notificaciones.',
+    notifDenied:'Permiso denegado. Puedes activarlo en los ajustes del navegador.',
+    syncLabel:'Sincronizar hora (API gratuita, opcional)',
+    syncLocal:'Solo hora local del dispositivo (recomendado)',
+    syncWorld:'WorldTimeAPI (requiere internet)',
+    gcal:'Calendario de Google', gcalConnect:'Conectar mi Google Calendar',
+    gcalDisconnect:'Desconectar calendario', gcalHint:'Escribe primero el ID de cliente OAuth de Google.',
+    gcalOk:'Calendario conectado.', gcalErr:'No se pudo leer el calendario.',
+    gcalNone:'Sin eventos próximos.', gcalNext:'Próximo:',
+    save:'Guardar y cerrar', close:'Cerrar sin guardar'
+  },
+  en: {
+    personal:'Personalization', name:'Your name (shown on screen)', lang:'Language',
+    greet:'For You', greetName:'For You, {n}', gift:'A gift from VERBUM Tech Solution',
+    tasks:"Today's tasks", notifs:'Notifications', sys:'System',
+    ph:'Space for phone / calendar notifications',
+    settings:'Settings', sub:'Everything is stored locally on your device.',
+    fixed:'Fixed tasks', addTask:'+ Add task', newTask:'New task', descr:'Description',
+    sounds:'Sounds', sndExp:'Explosion sound (00:00)', sndHour:'Hourly sound',
+    sndTask:'Task reminder', sndNotif:'Notification reminder',
+    customExp:'Custom sound (explosion)', customHour:'Custom sound (hour / task)',
+    test:'Test sounds', bg:'Wallpaper', customBg:'Your own image (dark recommended)',
+    clearBg:'Remove custom wallpaper',
+    notifCal:'Notifications & calendar', reqNotif:'Request notification permission',
+    notifNote:'System notifications need browser permission.',
+    notifOn:'Notifications enabled.', noNotif:"This browser doesn't support notifications.",
+    notifDenied:'Permission denied. You can enable it in the browser settings.',
+    syncLabel:'Time sync (free API, optional)',
+    syncLocal:'Device local time only (recommended)',
+    syncWorld:'WorldTimeAPI (needs internet)',
+    gcal:'Google Calendar', gcalConnect:'Connect my Google Calendar',
+    gcalDisconnect:'Disconnect calendar', gcalHint:'First paste your Google OAuth client ID.',
+    gcalOk:'Calendar connected.', gcalErr:'Could not read the calendar.',
+    gcalNone:'No upcoming events.', gcalNext:'Next:',
+    save:'Save and close', close:'Close without saving'
+  },
+  fr: {
+    personal:'Personnalisation', name:"Votre nom (affiché à l'écran)", lang:'Langue',
+    greet:'Pour Toi', greetName:'Pour Toi, {n}', gift:'Un cadeau de VERBUM Tech Solution',
+    tasks:'Tâches du jour', notifs:'Notifications', sys:'Système',
+    ph:"Espace pour les notifications du téléphone / de l'agenda",
+    settings:'Réglages', sub:'Tout est enregistré localement sur votre appareil.',
+    fixed:'Tâches fixes', addTask:'+ Ajouter une tâche', newTask:'Nouvelle tâche', descr:'Description',
+    sounds:'Sons', sndExp:"Son d'explosion (00:00)", sndHour:'Son chaque heure',
+    sndTask:'Rappel des tâches', sndNotif:'Rappel des notifications',
+    customExp:'Son personnalisé (explosion)', customHour:'Son personnalisé (heure / tâche)',
+    test:'Tester les sons', bg:"Fond d'écran", customBg:'Votre propre image (sombre conseillé)',
+    clearBg:'Retirer le fond personnalisé',
+    notifCal:'Notifications et agenda', reqNotif:'Autoriser les notifications',
+    notifNote:'Les notifications système exigent la permission du navigateur.',
+    notifOn:'Notifications activées.', noNotif:'Ce navigateur ne gère pas les notifications.',
+    notifDenied:"Permission refusée. Vous pouvez l'activer dans les réglages du navigateur.",
+    syncLabel:"Synchroniser l'heure (API gratuite, optionnel)",
+    syncLocal:"Heure locale de l'appareil seulement (recommandé)",
+    syncWorld:'WorldTimeAPI (internet requis)',
+    gcal:'Agenda Google', gcalConnect:'Connecter mon agenda Google',
+    gcalDisconnect:"Déconnecter l'agenda", gcalHint:"Collez d'abord votre ID client OAuth Google.",
+    gcalOk:'Agenda connecté.', gcalErr:"Impossible de lire l'agenda.",
+    gcalNone:'Aucun événement à venir.', gcalNext:'Prochain :',
+    save:'Enregistrer et fermer', close:'Fermer sans enregistrer'
+  },
+  pt: {
+    personal:'Personalização', name:'Seu nome (aparece na tela)', lang:'Idioma',
+    greet:'Para Você', greetName:'Para Você, {n}', gift:'Um presente da VERBUM Tech Solution',
+    tasks:'Tarefas do dia', notifs:'Notificações', sys:'Sistema',
+    ph:'Espaço para notificações do telefone / calendário',
+    settings:'Ajustes', sub:'Tudo é guardado localmente no aparelho.',
+    fixed:'Tarefas fixas', addTask:'+ Adicionar tarefa', newTask:'Nova tarefa', descr:'Descrição',
+    sounds:'Sons', sndExp:'Som de explosão (00:00)', sndHour:'Som a cada hora',
+    sndTask:'Aviso de tarefas', sndNotif:'Aviso de notificações',
+    customExp:'Som personalizado (explosão)', customHour:'Som personalizado (hora / tarefa)',
+    test:'Testar sons', bg:'Papel de parede', customBg:'Imagem própria (escura recomendada)',
+    clearBg:'Remover papel de parede personalizado',
+    notifCal:'Notificações e calendário', reqNotif:'Pedir permissão de notificações',
+    notifNote:'As notificações do sistema precisam de permissão do navegador.',
+    notifOn:'Notificações ativadas.', noNotif:'Este navegador não suporta notificações.',
+    notifDenied:'Permissão negada. Você pode ativar nos ajustes do navegador.',
+    syncLabel:'Sincronizar hora (API gratuita, opcional)',
+    syncLocal:'Só hora local do aparelho (recomendado)',
+    syncWorld:'WorldTimeAPI (precisa de internet)',
+    gcal:'Google Agenda', gcalConnect:'Conectar minha Google Agenda',
+    gcalDisconnect:'Desconectar agenda', gcalHint:'Cole primeiro o ID de cliente OAuth do Google.',
+    gcalOk:'Agenda conectada.', gcalErr:'Não foi possível ler a agenda.',
+    gcalNone:'Sem eventos próximos.', gcalNext:'Próximo:',
+    save:'Salvar e fechar', close:'Fechar sem salvar'
+  },
+  de: {
+    personal:'Personalisierung', name:'Dein Name (auf dem Bildschirm)', lang:'Sprache',
+    greet:'Für Dich', greetName:'Für Dich, {n}', gift:'Ein Geschenk von VERBUM Tech Solution',
+    tasks:'Aufgaben für heute', notifs:'Benachrichtigungen', sys:'System',
+    ph:'Platz für Telefon-/Kalender-Benachrichtigungen',
+    settings:'Einstellungen', sub:'Alles wird lokal auf dem Gerät gespeichert.',
+    fixed:'Feste Aufgaben', addTask:'+ Aufgabe hinzufügen', newTask:'Neue Aufgabe', descr:'Beschreibung',
+    sounds:'Klänge', sndExp:'Explosionsklang (00:00)', sndHour:'Stündlicher Klang',
+    sndTask:'Aufgaben-Erinnerung', sndNotif:'Benachrichtigungs-Erinnerung',
+    customExp:'Eigener Klang (Explosion)', customHour:'Eigener Klang (Stunde / Aufgabe)',
+    test:'Klänge testen', bg:'Hintergrundbild', customBg:'Eigenes Bild (dunkel empfohlen)',
+    clearBg:'Eigenes Hintergrundbild entfernen',
+    notifCal:'Benachrichtigungen & Kalender', reqNotif:'Benachrichtigungserlaubnis anfordern',
+    notifNote:'Systembenachrichtigungen brauchen die Erlaubnis des Browsers.',
+    notifOn:'Benachrichtigungen aktiviert.', noNotif:'Dieser Browser unterstützt keine Benachrichtigungen.',
+    notifDenied:'Erlaubnis verweigert. Du kannst sie in den Browsereinstellungen aktivieren.',
+    syncLabel:'Zeit synchronisieren (kostenlose API, optional)',
+    syncLocal:'Nur lokale Zeit des Geräts (empfohlen)',
+    syncWorld:'WorldTimeAPI (Internet nötig)',
+    gcal:'Google Kalender', gcalConnect:'Meinen Google Kalender verbinden',
+    gcalDisconnect:'Kalender trennen', gcalHint:'Füge zuerst deine Google OAuth-Client-ID ein.',
+    gcalOk:'Kalender verbunden.', gcalErr:'Kalender konnte nicht gelesen werden.',
+    gcalNone:'Keine kommenden Termine.', gcalNext:'Nächster:',
+    save:'Speichern und schließen', close:'Schließen ohne Speichern'
+  },
+  zh: {
+    personal:'个性化', name:'你的名字 (显示在屏幕上)', lang:'语言',
+    greet:'给你', greetName:'给你，{n}', gift:'VERBUM Tech Solution 的礼物',
+    tasks:'今日任务', notifs:'通知', sys:'系统',
+    ph:'手机 / 日历通知区域',
+    settings:'设置', sub:'所有内容仅保存在设备本地。',
+    fixed:'固定任务', addTask:'+ 添加任务', newTask:'新任务', descr:'描述',
+    sounds:'声音', sndExp:'爆炸声 (00:00)', sndHour:'整点报时',
+    sndTask:'任务提醒', sndNotif:'通知提醒',
+    customExp:'自定义声音 (爆炸)', customHour:'自定义声音 (整点 / 任务)',
+    test:'试听声音', bg:'壁纸', customBg:'自定义图片 (建议深色)',
+    clearBg:'移除自定义壁纸',
+    notifCal:'通知与日历', reqNotif:'请求通知权限',
+    notifNote:'系统通知需要浏览器授权。',
+    notifOn:'通知已开启。', noNotif:'此浏览器不支持通知。',
+    notifDenied:'权限被拒绝。可在浏览器设置中开启。',
+    syncLabel:'时间同步 (免费接口，可选)',
+    syncLocal:'仅使用设备本地时间 (推荐)',
+    syncWorld:'WorldTimeAPI (需联网)',
+    gcal:'谷歌日历', gcalConnect:'连接我的谷歌日历',
+    gcalDisconnect:'断开日历', gcalHint:'请先粘贴 Google OAuth 客户端 ID。',
+    gcalOk:'日历已连接。', gcalErr:'无法读取日历。',
+    gcalNone:'暂无日程。', gcalNext:'接下来：',
+    save:'保存并关闭', close:'关闭不保存'
+  },
+  ar: {
+    personal:'التخصيص', name:'اسمك (يظهر على الشاشة)', lang:'اللغة',
+    greet:'لأجلك', greetName:'لأجلك يا {n}', gift:'هدية من VERBUM Tech Solution',
+    tasks:'مهام اليوم', notifs:'الإشعارات', sys:'النظام',
+    ph:'مساحة لإشعارات الهاتف / التقويم',
+    settings:'الإعدادات', sub:'كل شيء يُحفظ محليًا على الجهاز.',
+    fixed:'مهام ثابتة', addTask:'+ إضافة مهمة', newTask:'مهمة جديدة', descr:'الوصف',
+    sounds:'الأصوات', sndExp:'صوت الانفجار (00:00)', sndHour:'صوت كل ساعة',
+    sndTask:'تنبيه المهام', sndNotif:'تنبيه الإشعارات',
+    customExp:'صوت مخصص (انفجار)', customHour:'صوت مخصص (الساعة / المهمة)',
+    test:'تجربة الأصوات', bg:'خلفية الشاشة', customBg:'صورة خاصة (يُفضل داكنة)',
+    clearBg:'إزالة الخلفية المخصصة',
+    notifCal:'الإشعارات والتقويم', reqNotif:'طلب إذن الإشعارات',
+    notifNote:'إشعارات النظام تحتاج إذن المتصفح.',
+    notifOn:'تم تفعيل الإشعارات.', noNotif:'هذا المتصفح لا يدعم الإشعارات.',
+    notifDenied:'تم رفض الإذن. يمكنك تفعيله من إعدادات المتصفح.',
+    syncLabel:'مزامنة الوقت (مجاني، اختياري)',
+    syncLocal:'وقت الجهاز المحلي فقط (موصى به)',
+    syncWorld:'WorldTimeAPI (يحتاج إنترنت)',
+    gcal:'تقويم Google', gcalConnect:'ربط تقويم Google',
+    gcalDisconnect:'فصل التقويم', gcalHint:'الصق أولاً معرّف عميل OAuth من Google.',
+    gcalOk:'تم ربط التقويم.', gcalErr:'تعذّر قراءة التقويم.',
+    gcalNone:'لا أحداث قادمة.', gcalNext:'القادم:',
+    save:'حفظ وإغلاق', close:'إغلاق بدون حفظ'
+  },
+  nl: {
+    personal:'Personalisatie', name:'Jouw naam (op het scherm)', lang:'Taal',
+    greet:'Voor Jou', greetName:'Voor Jou, {n}', gift:'Een cadeau van VERBUM Tech Solution',
+    tasks:'Taken van vandaag', notifs:'Meldingen', sys:'Systeem',
+    ph:'Ruimte voor telefoon-/agenda-meldingen',
+    settings:'Instellingen', sub:'Alles wordt lokaal op het apparaat opgeslagen.',
+    fixed:'Vaste taken', addTask:'+ Taak toevoegen', newTask:'Nieuwe taak', descr:'Omschrijving',
+    sounds:'Geluiden', sndExp:'Explosiegeluid (00:00)', sndHour:'Uurlijkse geluid',
+    sndTask:'Taakherinnering', sndNotif:'Meldingsherinnering',
+    customExp:'Eigen geluid (explosie)', customHour:'Eigen geluid (uur / taak)',
+    test:'Geluiden testen', bg:'Achtergrond', customBg:'Eigen afbeelding (donker aanbevolen)',
+    clearBg:'Eigen achtergrond verwijderen',
+    notifCal:'Meldingen & agenda', reqNotif:'Meldingsrechten vragen',
+    notifNote:'Systeommeldingen hebben toestemming van de browser nodig.',
+    notifOn:'Meldingen ingeschakeld.', noNotif:'Deze browser ondersteunt geen meldingen.',
+    notifDenied:'Toestemming geweigerd. Je kunt het inschakelen in de browserinstellingen.',
+    syncLabel:'Tijd synchroniseren (gratis API, optioneel)',
+    syncLocal:'Alleen lokale apparaattijd (aanbevolen)',
+    syncWorld:'WorldTimeAPI (internet nodig)',
+    gcal:'Google Agenda', gcalConnect:'Mijn Google Agenda verbinden',
+    gcalDisconnect:'Agenda ontkoppelen', gcalHint:'Plak eerst je Google OAuth-client-ID.',
+    gcalOk:'Agenda verbonden.', gcalErr:'Agenda kon niet worden gelezen.',
+    gcalNone:'Geen komende afspraken.', gcalNext:'Volgende:',
+    save:'Opslaan en sluiten', close:'Sluiten zonder opslaan'
+  }
+};
+const LOCALE = { es:'es-ES', en:'en-US', fr:'fr-FR', pt:'pt-BR', de:'de-DE', zh:'zh-CN', ar:'ar', nl:'nl-NL' };
+let lang = store.get('paraTi_lang', 'es');
+if (!LANGS[lang]) lang = 'es';
+let giftName = store.get('paraTi_name', '');
+
+function t(k) {
+  return (LANGS[lang] && LANGS[lang][k]) || LANGS.es[k] || k;
+}
+
+const I18N_IDS = [
+  ['lbl-personal','personal'],['lbl-name','name'],['lbl-lang','lang'],
+  ['lbl-settings','settings'],['lbl-sub','sub'],['lbl-tasks','fixed'],
+  ['lbl-sounds','sounds'],['lbl-snd-exp','sndExp'],['lbl-snd-hour','sndHour'],
+  ['lbl-snd-task','sndTask'],['lbl-snd-notif','sndNotif'],
+  ['lbl-custom-exp','customExp'],['lbl-custom-hour','customHour'],
+  ['lbl-bg','bg'],['lbl-custom-bg','customBg'],
+  ['lbl-notifcal','notifCal'],['lbl-notifnote','notifNote'],
+  ['lbl-sync','syncLabel'],['opt-sync-local','syncLocal'],['opt-sync-world','syncWorld'],
+  ['lbl-gcal','gcal'],['btn-gcal','gcalConnect'],
+  ['btn-add-task','addTask'],['btn-test-sound','test'],['btn-clear-bg','clearBg'],
+  ['btn-request-notif','reqNotif'],['btn-save','save'],['btn-close-settings','close'],
+  ['tasks-title','tasks'],['notif-title','notifs'],['lbl-sys','sys'],['lbl-ph','ph'],
+  ['status','gift']
+];
+
+function applyLang() {
+  try {
+    document.documentElement.lang = LOCALE[lang] || 'es';
+    document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    I18N_IDS.forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = t(key);
+    });
+    document.getElementById('gift-lang').value = lang;
+  } catch (e) { console.warn('i18n', e); }
+}
+
+function refreshGreeting() {
+  const g = document.getElementById('greeting');
+  if (g) g.textContent = giftName ? t('greetName').replace('{n}', giftName) : t('greet');
+  const st = document.getElementById('status');
+  if (st) st.textContent = t('gift');
+}
+
+function updateDate() {
+  const el = document.getElementById('local-date');
+  if (!el) return;
+  try {
+    el.textContent = new Intl.DateTimeFormat(LOCALE[lang], {
+      weekday: 'long', day: 'numeric', month: 'long'
+    }).format(new Date());
+  } catch (e) { el.textContent = ''; }
+}
+
 
 // --- Audio ---
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -831,6 +1143,10 @@ function openSettings() {
     document.querySelectorAll('.bg-swatch').forEach(s => {
       s.classList.toggle('active', s.dataset.bg === (bgSetting.type || 'none'));
     });
+    document.getElementById('gift-name').value = giftName || '';
+    document.getElementById('gift-lang').value = lang;
+    document.getElementById('gcal-client-id').value = store.get('paraTi_gcal_id', '');
+    refreshGreeting();
   } catch (e) { console.warn('Ajustes: carga de valores', e); }
 }
 document.getElementById('btn-settings').addEventListener('click', openSettings);
@@ -862,6 +1178,19 @@ document.getElementById('btn-save').onclick = () => {
     notif: document.getElementById('snd-notif').checked
   };
   store.set('reloj_sounds', soundSettings);
+
+  // Regalo: nombre, idioma y calendario
+  try {
+    giftName = (document.getElementById('gift-name').value || '').trim();
+    store.set('paraTi_name', giftName);
+    lang = document.getElementById('gift-lang').value || 'es';
+    store.set('paraTi_lang', lang);
+    applyLang();
+    refreshGreeting();
+    updateDate();
+    const cid = (document.getElementById('gcal-client-id').value || '').trim();
+    if (cid) store.set('paraTi_gcal_id', cid);
+  } catch (e) { console.warn('guardar regalo', e); }
 
   updateUI();
   settingsPanel.classList.remove('open');
@@ -938,17 +1267,101 @@ document.getElementById('btn-clear-bg').onclick = () => {
 // Notificaciones
 document.getElementById('btn-request-notif').onclick = async () => {
   if (!('Notification' in window)) {
-    alert('Este navegador no soporta notificaciones.');
+    alert(t('noNotif'));
     return;
   }
   const perm = await Notification.requestPermission();
   if (perm === 'granted') {
-    new Notification('Para Ti', { body: 'Notificaciones activadas.' });
+    new Notification('Para Ti', { body: t('notifOn') });
     playNotifSound();
   } else {
-    alert('Permiso denegado. Puedes activarlo en los ajustes del navegador.');
+    alert(t('notifDenied'));
   }
 };
+
+
+// --- Google Calendar (OAuth del propio dueño del teléfono) ---
+let gcalToken = null, gcalTokClient = null, gcalTimer = null;
+
+function gcalStatus(msg) {
+  const el = document.getElementById('gcal-status');
+  if (el) el.textContent = msg || '';
+}
+
+async function gcalConnect() {
+  try {
+    const cid = (document.getElementById('gcal-client-id').value || '').trim();
+    if (!cid) { alert(t('gcalHint')); return; }
+    store.set('paraTi_gcal_id', cid);
+    gcalStatus('...');
+    if (!(window.google && google.accounts && google.accounts.oauth2)) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://accounts.google.com/gsi/client';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    gcalTokClient = google.accounts.oauth2.initTokenClient({
+      client_id: cid,
+      scope: 'https://www.googleapis.com/auth/calendar.readonly',
+      callback: (resp) => {
+        if (resp && resp.access_token) {
+          gcalToken = resp.access_token;
+          gcalStatus(t('gcalOk'));
+          gcalFetch();
+        } else {
+          gcalStatus(t('gcalErr'));
+        }
+      }
+    });
+    gcalTokClient.requestAccessToken({ prompt: '' });
+  } catch (e) { gcalStatus(t('gcalErr')); }
+}
+
+async function gcalFetch() {
+  if (!gcalToken) return;
+  try {
+    const r = await fetch(
+      'https://www.googleapis.com/calendar/v3/events?timeMin=' +
+      encodeURIComponent(new Date().toISOString()) +
+      '&maxResults=5&singleEvents=true&orderBy=startTime',
+      { headers: { Authorization: 'Bearer ' + gcalToken } }
+    );
+    if (!r.ok) throw new Error('http ' + r.status);
+    const data = await r.json();
+    const items = data.items || [];
+    const box = document.getElementById('gcal-events');
+    const live = document.getElementById('cal-next');
+    const fmt = new Intl.DateTimeFormat(LOCALE[lang], {
+      weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+    });
+    if (!items.length) {
+      if (box) box.textContent = t('gcalNone');
+      if (live) live.textContent = '';
+    } else {
+      if (box) {
+        box.textContent = '';
+        items.forEach(ev => {
+          let when = '';
+          try {
+            when = ev.start && ev.start.dateTime
+              ? fmt.format(new Date(ev.start.dateTime))
+              : (ev.start && ev.start.date ? ev.start.date : '');
+          } catch (e) {}
+          const line = document.createElement('div');
+          line.textContent = '• ' + (ev.summary || '—') + (when ? ' · ' + when : '');
+          box.appendChild(line);
+        });
+      }
+      if (live) live.textContent = t('gcalNext') + ' ' + (items[0].summary || '—');
+    }
+    clearTimeout(gcalTimer);
+    gcalTimer = setTimeout(gcalFetch, 15 * 60 * 1000);
+  } catch (e) { gcalStatus(t('gcalErr')); }
+}
+
+document.getElementById('btn-gcal').addEventListener('click', gcalConnect);
 
 // --- Arranque ---
 function loop() {
@@ -956,6 +1369,11 @@ function loop() {
   updateUI();
   requestAnimationFrame(loop);
 }
+
+applyLang();
+refreshGreeting();
+updateDate();
+setInterval(updateDate, 30000);
 
 applyBackground();
 resize();
