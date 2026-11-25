@@ -1,4 +1,4 @@
-const CACHE = 'reloj-anillos-v2';
+const CACHE = 'para-ti-v1';
 const ASSETS = [
   './',
   './index.html',

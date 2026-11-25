@@ -1,25 +1,16 @@
 {
-  "name": "Reloj Anillos 24h",
-  "short_name": "Anillos",
-  "description": "Reloj digital con anillos progresivos, tareas fijas y explosión de medianoche",
+  "id": "./",
+  "name": "Para Ti",
+  "short_name": "Para Ti",
+  "description": "Un regalo de VERBUM Tech Solution",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0a0f",
-  "theme_color": "#0a0a0f",
+  "background_color": "#0b0b10",
+  "theme_color": "#0b0b10",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

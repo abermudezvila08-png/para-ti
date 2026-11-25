@@ -6,15 +6,15 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" content="#0b0b10">
 <link rel="manifest" href="manifest.json">
-<title>Reloj Anillos 24h</title>
+<title>Para Ti</title>
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root {
-    --bg: #0a0a0f;
+    --bg: #0b0b10;
     --text: #ffffff;
-    --accent: #00ffcc;
+    --accent: #f0b429;
     --card: #15151f;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -93,10 +93,10 @@
     background: rgba(0,0,0,0.35);
     border: 1px solid #333;
     color: #bbb;
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     z-index: 5;
   }
@@ -263,8 +263,8 @@
     font-weight: 600;
     cursor: pointer;
   }
-  .btn-primary { background: #003322; color: var(--accent); }
-  .btn-secondary { background: #1a3a2a; color: #4dffb0; }
+  .btn-primary { background: #3a2408; color: #ffb35c; }
+  .btn-secondary { background: #26160a; color: #ff9a4d; }
   .btn-ghost { background: #222; color: #ccc; }
   .btn-danger { background: #331111; color: #ff8888; }
 
@@ -323,12 +323,12 @@
     </div>
   </div>
 
-  <div id="status">Reloj Anillos • PWA</div>
+  <div id="status">Un regalo de VERBUM Tech Solution</div>
 </div>
 
 <!-- SETTINGS -->
 <div id="settings-panel">
-  <h2>Ajustes del Reloj</h2>
+  <h2>Ajustes</h2>
   <p class="sub">Todo se guarda localmente en el dispositivo.</p>
 
   <!-- TAREAS -->
@@ -408,7 +408,7 @@
 
 <script>
 // ============================================================
-// RELOJ ANILLOS 24h - Prototipo PWA
+// PARA TI · Un regalo de VERBUM Tech Solution · PWA
 // ============================================================
 
 const COLOR_CYCLE = [
@@ -543,7 +543,7 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 
-// --- Lógica de anillos ---
+// --- Lógica de los círculos del reloj ---
 function computeRings(now) {
   const h = now.getHours();
   const m = now.getMinutes();
@@ -819,19 +819,25 @@ function applyBackground() {
 // --- Settings ---
 const settingsPanel = document.getElementById('settings-panel');
 
-document.getElementById('btn-settings').onclick = () => {
-  // Cargar toggles
-  document.getElementById('snd-explosion').checked = soundSettings.explosion;
-  document.getElementById('snd-hour').checked = soundSettings.hour;
-  document.getElementById('snd-task').checked = soundSettings.task;
-  document.getElementById('snd-notif').checked = soundSettings.notif;
-  renderTasksEdit();
-  // Marcar fondo activo
-  document.querySelectorAll('.bg-swatch').forEach(s => {
-    s.classList.toggle('active', s.dataset.bg === (bgSetting.type || 'none'));
-  });
+function openSettings() {
+  // El panel abre primero, siempre; los valores se cargan después y protegidos
   settingsPanel.classList.add('open');
-};
+  try {
+    document.getElementById('snd-explosion').checked = !!soundSettings.explosion;
+    document.getElementById('snd-hour').checked = !!soundSettings.hour;
+    document.getElementById('snd-task').checked = !!soundSettings.task;
+    document.getElementById('snd-notif').checked = !!soundSettings.notif;
+    renderTasksEdit();
+    document.querySelectorAll('.bg-swatch').forEach(s => {
+      s.classList.toggle('active', s.dataset.bg === (bgSetting.type || 'none'));
+    });
+  } catch (e) { console.warn('Ajustes: carga de valores', e); }
+}
+document.getElementById('btn-settings').addEventListener('click', openSettings);
+document.getElementById('btn-settings').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  openSettings();
+}, { passive: false });
 
 document.getElementById('btn-close-settings').onclick = () => {
   settingsPanel.classList.remove('open');
@@ -937,7 +943,7 @@ document.getElementById('btn-request-notif').onclick = async () => {
   }
   const perm = await Notification.requestPermission();
   if (perm === 'granted') {
-    new Notification('Reloj Anillos', { body: 'Notificaciones activadas.' });
+    new Notification('Para Ti', { body: 'Notificaciones activadas.' });
     playNotifSound();
   } else {
     alert('Permiso denegado. Puedes activarlo en los ajustes del navegador.');
