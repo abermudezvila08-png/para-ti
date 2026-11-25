@@ -12,3 +12,7 @@ PWA: abre el enlace en Chrome y elige "Instalar aplicación".
 - **Google Calendar (opcional)**: en Ajustes → Notificaciones y calendario se pega un ID de cliente OAuth de Google y el reloj muestra los próximos eventos de esa persona. Todo se guarda solo en el dispositivo.
 
 Un regalo de VERBUM Tech Solution.
+
+## Tarjeta de regalo para WhatsApp
+
+Abre `tarjeta.html`, escribe el nombre de la persona, elige su idioma y descarga la tarjeta PNG transparente con los pasos de instalación ya explicados en ese idioma. El nombre y el idioma quedan sellados en la imagen antes de enviarla.
