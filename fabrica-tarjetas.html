@@ -344,7 +344,7 @@ function draw(c){
     x.fillStyle="#fff";x.fillText(t,X+22,y+35);y+=70}
   y+=20;x.fillStyle="#b9bfee";x.font="italic 32px "+F;y=wrap(x,T.t,X,y,MW,40);
   [[T.a,T.as],[T.i,T.is]].forEach(function(p){
-    y+=22;x.fillStyle=ac;x.font="bold 36px "+F;x.fillText(p[0],X,y);y+=14;
+    y+=42;x.fillStyle=ac;x.font="bold 36px "+F;x.fillText(p[0],X,y);y+=18;
     x.fillStyle="#eef0ff";x.font="31px "+F;
     p[1].forEach(function(s,k){y+=40;y=wrap(x,(k+1)+". "+s,X,y,MW,40)-40});
   });
