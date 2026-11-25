@@ -1381,7 +1381,7 @@ loop();
 
 // Service Worker para PWA (si existe)
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then(function(r){if(r)r.update()}).catch(() => {});
 }
 </script>
 </body>
