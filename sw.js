@@ -1,7 +1,9 @@
-const CACHE = 'para-ti-v2';
+const CACHE = 'para-ti-v3';
 const ASSETS = [
   './',
   './index.html',
+  './tarjeta.html',
+  './fabrica-tarjetas.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
